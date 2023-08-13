@@ -13,18 +13,28 @@ app.listen(port, () => {
     console.log(`server is listening at localhost:${port}`);
 });
 
-// Sub 4. Get EndPoint
+// Sub 4. GetAll EndPoint
 app.get('/', (req, res) => {
-    connection.query(`SELECT * from ${process.env.TABLE_NAME}`, (error, rows) => {
+    connection.query(`SELECT * FROM ${process.env.TABLE_NAME}`, (error, rows) => {
         if (error) throw error;
         res.send(rows);
     });
 });
 
+// Sub 5. GetOne EndPoint
+app.get('/:id', (req, res) => {
+    connection.query(`SELECT * FROM ${process.env.TABLE_NAME} WHERE BOARD_NO='${req.params.id}'`, (error, rows) => {
+        if (error) throw error;
+        if (rows.length == 0) {res.send('No exist content')}
+        else {res.send(rows)};
+    })
+})
+
 // Sub 7. Delete EndPoint
 app.delete('/:id', (req, res) => {
     connection.query(`DELETE FROM ${process.env.TABLE_NAME} WHERE BOARD_NO=${req.params.id}`, (error, rows) => {
         if (error) throw error;
-        res.send(`${req.params.id} Delete Complete`);
+        if (rows.affectedRows == 0) {res.send('Already deleted or no exist content')}
+        else {res.send(`${req.params.id} Delete Complete`)};
     });
 });
