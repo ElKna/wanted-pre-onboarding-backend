@@ -16,8 +16,8 @@ app.get('/', (req, res) => {
     });
 });
 
-app.get('/users', (req, res) => {
-    connection.query('SELECT * from Users', (error, rows) => {
+app.get('/board', (req, res) => {
+    connection.query('SELECT * from board', (error, rows) => {
         if (error) throw error;
         console.log('User info is: ', rows);
         res.send(rows);
