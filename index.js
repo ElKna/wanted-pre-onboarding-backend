@@ -7,23 +7,24 @@ const mysql     = require('mysql2');
 const connection = mysql.createConnection(require('./database'))
 const app       = express();
 const port      = 3000;
-
 app.set('port', port)
 
-app.get('/', (req, res) => {
-    res.json({
-        success: true,
-    });
+app.listen(port, () => {
+    console.log(`server is listening at localhost:${port}`);
 });
 
-app.get('/board', (req, res) => {
-    connection.query('SELECT * from board', (error, rows) => {
+// Sub 4. Get EndPoint
+app.get('/', (req, res) => {
+    connection.query(`SELECT * from ${process.env.TABLE_NAME}`, (error, rows) => {
         if (error) throw error;
-        console.log('User info is: ', rows);
         res.send(rows);
     });
 });
 
-app.listen(port, () => {
-    console.log(`server is listening at localhost:${port}`);
+// Sub 7. Delete EndPoint
+app.delete('/:id', (req, res) => {
+    connection.query(`DELETE FROM ${process.env.TABLE_NAME} WHERE BOARD_NO=${req.params.id}`, (error, rows) => {
+        if (error) throw error;
+        res.send(`${req.params.id} Delete Complete`);
+    });
 });
