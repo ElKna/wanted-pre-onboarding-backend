@@ -17,7 +17,7 @@ app.listen(port, () => {
 });
 
 // Sub 1. CreateUser Endpoint
-var valid_email     = /^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-Za-z0-9\-]+/;
+var valid_email     = /^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+/;
 var valid_password  = /^[A-Za-z0-9]{8,25}$/;
 app.post('/login', async (req, res) => {
     let body = req.body;
@@ -25,7 +25,7 @@ app.post('/login', async (req, res) => {
     if (!body.email || !body.password) {
         res.status(400).send('Request must be contained email and password field');
     } else if ((body.email.length > 30) || !valid_email.test(body.email) || !valid_password.test(body.password)) {
-        res.status(400).send('Invalid email field(xxx@xx.xx, max-length=30) or Invalid password field(Upper, Under, Number, Length: 8~25)');
+        res.status(400).send('Invalid email field(xxx@xxxx, max-length=30) or Invalid password field(Upper, Under, Number, Length: 8~25)');
     } else {
         connection.query(`SELECT * FROM ${process.env.USER_TABLE} WHERE email='${body.email}'`, (error, rows) => {
             if (error) throw error;
@@ -41,7 +41,6 @@ app.post('/login', async (req, res) => {
                 })
             }
         })
-
     }
 })
 
