@@ -121,37 +121,46 @@ app.get('/:id', async (req, res) => {
 // Sub 6. UpdateOne EndPoint
 app.post('/:id', async (req, res) => {
     let body = req.body;
-    if (!body.token) {
-        res.status(401).send('Request must be contained token');
-    } else if (!body.hasOwnProperty('title') || !body.hasOwnProperty('contents')) {
-        res.status(400).send('Request must be contained title and contents field');
-    } else {
-        let username = jwt.verify(body.token, secretKey).user;
-        connection.query(`SELECT * FROM ${process.env.BOARD_TABLE} WHERE board_no=${req.params.id}`, (error, rows) => {
-            try {
-                if (rows[0].user == username) {
-                    connection.query(
-                        `UPDATE ${process.env.BOARD_TABLE} SET title='${req.body.title}' WHERE board_no=${req.params.id};`+
-                        `UPDATE ${process.env.BOARD_TABLE} SET contents='${req.body.contents}' WHERE board_no=${req.params.id};`, (error, rows) => {
-                            if (error) throw error;
-                            if (rows[0].changedRows == 0 && rows[1].changedRows == 0) {
-                                res.status(202).send('Already modified');
-                            } else {
-                                res.status(201).send(
-                                    {
-                                        "board_id": `${rows.insertId}`,
-                                        "title": `${body.title}`,
-                                        "contents": `${body.contents}`
-                                    });
-                            };
-                    });
-                } else {
-                    res.status(401).send('You have not permission to update and delete')
+    try {
+        let token = req.rawHeaders[1].split(' ')[1];
+        let username = jwt.verify(token, secretKey).user;
+        if (!body.hasOwnProperty('title') || !body.hasOwnProperty('contents')) {
+            res.status(400).send('Request must be contained title and contents field');
+        } else {            connection.query(`SELECT * FROM ${process.env.BOARD_TABLE} WHERE board_no=${req.params.id}`, (error, rows) => {
+                try {
+                    if (rows[0].user == username) {
+                        connection.query(
+                            `UPDATE ${process.env.BOARD_TABLE} SET title='${req.body.title}' WHERE board_no=${req.params.id};`+
+                            `UPDATE ${process.env.BOARD_TABLE} SET contents='${req.body.contents}' WHERE board_no=${req.params.id};`, (error, rows) => {
+                                if (error) throw error;
+                                if (rows[0].changedRows == 0 && rows[1].changedRows == 0) {
+                                    res.status(202).send('Already modified');
+                                } else {
+                                    res.status(201).send(
+                                        {
+                                            "board_id": `${rows.insertId}`,
+                                            "title": `${body.title}`,
+                                            "contents": `${body.contents}`,
+                                            "user": `${username}`
+                                        });
+                                };
+                        });
+                    } else {
+                        res.status(401).send('You have not permission to update and delete')
+                    }
+                } catch (err) {
+                    res.status(404).send('No exist content');
                 }
-            } catch (err) {
-                res.status(404).send('No exist content');
-            }
-        })
+            })
+        }
+    } catch (err) {
+        if (err.message === 'jwt expired') {
+            res.status(401).send('Token expired');
+        } else if (err.message === 'invalid token') {
+            res.status(401).send('Invalid token');
+        } else {
+            res.status(401).send('Request must be contained token');
+        }
     }
 });
 
