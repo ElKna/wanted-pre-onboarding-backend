@@ -68,7 +68,7 @@ app.post('/login', async (req, res) => {
 })
 
 // Sub 3. CreateNew EndPoint
-app.post('/', (req, res) => {
+app.post('/', async (req, res) => {
     let body = req.body;
     if (!body.token) {
         res.status(401).send('Request must be contained token');
@@ -77,7 +77,12 @@ app.post('/', (req, res) => {
         if (body.hasOwnProperty('title') && body.hasOwnProperty('contents')) {
             connection.query(`INSERT INTO ${process.env.BOARD_TABLE} (title, contents, user) VALUES ('${req.body.title}', '${req.body.contents}', '${username}')`, (error, rows) => {
                 if (error) throw error;
-                res.status(201).send(req.body);
+                res.status(201).send(
+                    {
+                        "board_id": `${rows.insertId}`,
+                        "title": `${body.title}`,
+                        "contents": `${body.contents}`
+                    });
             });
         } else {
             res.status(400).send('Request must be contained title and contents field');
@@ -86,7 +91,7 @@ app.post('/', (req, res) => {
 });
 
 // Sub 4. GetAll EndPoint
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
     connection.query(`SELECT * FROM ${process.env.BOARD_TABLE}`, (error, rows) => {
         if (error) throw error;
         res.send(rows);
@@ -94,8 +99,8 @@ app.get('/', (req, res) => {
 });
 
 // Sub 5. GetOne EndPoint
-app.get('/:id', (req, res) => {
-    connection.query(`SELECT * FROM ${process.env.BOARD_TABLE} WHERE BOARD_NO='${req.params.id}'`, (error, rows) => {
+app.get('/:id', async (req, res) => {
+    connection.query(`SELECT * FROM ${process.env.BOARD_TABLE} WHERE board_no='${req.params.id}'`, (error, rows) => {
         if (error) throw error;
         if (rows.length == 0) {
             res.status(404).send('No exist content');
@@ -106,26 +111,45 @@ app.get('/:id', (req, res) => {
 })
 
 // Sub 6. UpdateOne EndPoint
-app.post('/:id', (req, res) => {
-    if (req.body.hasOwnProperty('title') && req.body.hasOwnProperty('contents')) {
-        connection.query(
-            `UPDATE ${process.env.BOARD_TABLE} SET title='${req.body.title}' WHERE BOARD_NO=${req.params.id};`+
-            `UPDATE ${process.env.BOARD_TABLE} SET contents='${req.body.contents}' WHERE BOARD_NO=${req.params.id};`, (error, rows) => {
-                if (error) throw error;
-                if (rows[0].affectedRows == 0 && rows[1].affectedRows == 0) {
-                    res.status(202).send('Already modified or no exist content');
-                } else {
-                    res.status(201).send(req.body);
-                };
-        });
-    } else {
+app.post('/:id', async (req, res) => {
+    let body = req.body;
+    if (!body.token) {
+        res.status(401).send('Request must be contained token');
+    } else if (!body.hasOwnProperty('title') || !body.hasOwnProperty('contents')) {
         res.status(400).send('Request must be contained title and contents field');
+    } else {
+        let username = jwt.verify(body.token, secretKey).user;
+        connection.query(`SELECT * FROM ${process.env.BOARD_TABLE} WHERE board_no=${req.params.id}`, (error, rows) => {
+            try {
+                if (rows[0].user == username) {
+                    connection.query(
+                        `UPDATE ${process.env.BOARD_TABLE} SET title='${req.body.title}' WHERE board_no=${req.params.id};`+
+                        `UPDATE ${process.env.BOARD_TABLE} SET contents='${req.body.contents}' WHERE board_no=${req.params.id};`, (error, rows) => {
+                            if (error) throw error;
+                            if (rows[0].changedRows == 0 && rows[1].changedRows == 0) {
+                                res.status(202).send('Already modified');
+                            } else {
+                                res.status(201).send(
+                                    {
+                                        "board_id": `${rows.insertId}`,
+                                        "title": `${body.title}`,
+                                        "contents": `${body.contents}`
+                                    });
+                            };
+                    });
+                } else {
+                    res.status(401).send('You have not permission to update and delete')
+                }
+            } catch (err) {
+                res.status(404).send('No exist content');
+            }
+        })
     }
 });
 
 // Sub 7. Delete EndPoint
-app.delete('/:id', (req, res) => {
-    connection.query(`DELETE FROM ${process.env.BOARD_TABLE} WHERE BOARD_NO=${req.params.id}`, (error, rows) => {
+app.delete('/:id', async (req, res) => {
+    connection.query(`DELETE FROM ${process.env.BOARD_TABLE} WHERE board_no=${req.params.id}`, (error, rows) => {
         if (error) throw error;
         if (rows.affectedRows == 0) {
             res.status(202).send('Already deleted or no exist content');
