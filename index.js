@@ -59,7 +59,7 @@ app.post('/login', async (req, res) => {
             var hashPassword = crypto.createHash("sha256").update(body.password + rows[0].salt).digest("hex");
             if (hashPassword == rows[0].password) {
                 const token = jwt.sign({user: `${body.email}`}, secretKey, options);
-                res.status(201).send({"token": token})
+                res.status(201).send(token)
             } else {
                 res.status(401).send('Invalid email or password');
             }
@@ -149,12 +149,36 @@ app.post('/:id', async (req, res) => {
 
 // Sub 7. Delete EndPoint
 app.delete('/:id', async (req, res) => {
-    connection.query(`DELETE FROM ${process.env.BOARD_TABLE} WHERE board_no=${req.params.id}`, (error, rows) => {
-        if (error) throw error;
-        if (rows.affectedRows == 0) {
-            res.status(202).send('Already deleted or no exist content');
+    try {
+        let token = req.rawHeaders[1].split(' ')[1];
+        let username = jwt.verify(token, secretKey).user;
+        connection.query(`SELECT * FROM ${process.env.BOARD_TABLE} WHERE board_no=${req.params.id}`, (error, rows) => {
+            try {
+                if (rows[0].user == username) {
+                    connection.query(`DELETE FROM ${process.env.BOARD_TABLE} WHERE board_no=${req.params.id}`, (error, rows) => {
+                        if (error) throw error;
+                        if (rows.affectedRows == 0) {
+                            res.status(202).send('Already deleted');
+                        } else {
+                            res.send(`${req.params.id} Delete Complete`);
+                        };
+                    });
+                } else {
+                    res.status(401).send('You have not permission to update and delete')
+                }
+            } catch (err) {
+                res.status(404).send('No exist content');
+            }
+        })
+    } catch (err) {
+        if (err.message === 'jwt expired') {
+            res.status(401).send('Token expired');
+        } else if (err.message === 'invalid token') {
+            res.status(401).send('Invalid token');
         } else {
-            res.send(`${req.params.id} Delete Complete`);
-        };
-    });
+            console.log("invalid token");
+            res.status(401).send('Invalid token');
+        }
+    }
+
 });
