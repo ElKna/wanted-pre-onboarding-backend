@@ -69,13 +69,19 @@ app.post('/login', async (req, res) => {
 
 // Sub 3. CreateNew EndPoint
 app.post('/', (req, res) => {
-    if (req.body.hasOwnProperty('TITLE') && req.body.hasOwnProperty('CONTENTS')) {
-        connection.query(`INSERT INTO ${process.env.BOARD_TABLE} (TITLE, CONTENTS) VALUES ('${req.body.TITLE}', '${req.body.CONTENTS}')`, (error, rows) => {
-            if (error) throw error;
-            res.status(201).send(req.body);
-        });
+    let body = req.body;
+    if (!body.token) {
+        res.status(401).send('Request must be contained token');
     } else {
-        res.status(400).send('Request must be contained TITLE and CONTENTS field');
+        let username = jwt.verify(body.token, secretKey).user;
+        if (body.hasOwnProperty('title') && body.hasOwnProperty('contents')) {
+            connection.query(`INSERT INTO ${process.env.BOARD_TABLE} (title, contents, user) VALUES ('${req.body.title}', '${req.body.contents}', '${username}')`, (error, rows) => {
+                if (error) throw error;
+                res.status(201).send(req.body);
+            });
+        } else {
+            res.status(400).send('Request must be contained title and contents field');
+        }
     }
 });
 
@@ -101,10 +107,10 @@ app.get('/:id', (req, res) => {
 
 // Sub 6. UpdateOne EndPoint
 app.post('/:id', (req, res) => {
-    if (req.body.hasOwnProperty('TITLE') && req.body.hasOwnProperty('CONTENTS')) {
+    if (req.body.hasOwnProperty('title') && req.body.hasOwnProperty('contents')) {
         connection.query(
-            `UPDATE ${process.env.BOARD_TABLE} SET TITLE='${req.body.TITLE}' WHERE BOARD_NO=${req.params.id};`+
-            `UPDATE ${process.env.BOARD_TABLE} SET CONTENTS='${req.body.CONTENTS}' WHERE BOARD_NO=${req.params.id};`, (error, rows) => {
+            `UPDATE ${process.env.BOARD_TABLE} SET title='${req.body.title}' WHERE BOARD_NO=${req.params.id};`+
+            `UPDATE ${process.env.BOARD_TABLE} SET contents='${req.body.contents}' WHERE BOARD_NO=${req.params.id};`, (error, rows) => {
                 if (error) throw error;
                 if (rows[0].affectedRows == 0 && rows[1].affectedRows == 0) {
                     res.status(202).send('Already modified or no exist content');
@@ -113,7 +119,7 @@ app.post('/:id', (req, res) => {
                 };
         });
     } else {
-        res.status(400).send('Request must be contained TITLE and CONTENTS field');
+        res.status(400).send('Request must be contained title and contents field');
     }
 });
 

@@ -9,11 +9,11 @@ USE `TEST_BOARD`;
 DROP TABLE IF EXISTS `board`;
 
 CREATE TABLE `board` (
-    `BOARD_NO` int NOT NULL AUTO_INCREMENT,
-    `TITLE` varchar(30) DEFAULT NULL,
-    `CONTENTS` varchar(100) DEFAULT NULL,
-    `USER` varchar(30) NOT NULL,
-    PRIMARY KEY (`BOARD_NO`)
+    `board_no` int NOT NULL AUTO_INCREMENT,
+    `title` varchar(30) DEFAULT NULL,
+    `contents` varchar(100) DEFAULT NULL,
+    `user` varchar(30) NOT NULL,
+    PRIMARY KEY (`board_no`)
 );
 
 DROP TABLE IF EXISTS `user`;
@@ -28,7 +28,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `board` WRITE;
 
-INSERT INTO `board` (`TITLE`, `CONTENTS`, `USER`)
+INSERT INTO `board` (`title`, `contents`, `user`)
 VALUES
         ('Test Title', 'Test Content', 'admin@mail.com'),
         ('Test Title02', 'Test Contents02', 'admin@mail.com'),
