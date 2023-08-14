@@ -70,10 +70,9 @@ app.post('/login', async (req, res) => {
 // Sub 3. CreateNew EndPoint
 app.post('/', async (req, res) => {
     let body = req.body;
-    if (!body.token) {
-        res.status(401).send('Request must be contained token');
-    } else {
-        let username = jwt.verify(body.token, secretKey).user;
+    try {
+        let token = req.rawHeaders[1].split(' ')[1];
+        let username = jwt.verify(token, secretKey).user;
         if (body.hasOwnProperty('title') && body.hasOwnProperty('contents')) {
             connection.query(`INSERT INTO ${process.env.BOARD_TABLE} (title, contents, user) VALUES ('${req.body.title}', '${req.body.contents}', '${username}')`, (error, rows) => {
                 if (error) throw error;
@@ -81,11 +80,20 @@ app.post('/', async (req, res) => {
                     {
                         "board_id": `${rows.insertId}`,
                         "title": `${body.title}`,
-                        "contents": `${body.contents}`
+                        "contents": `${body.contents}`,
+                        "user": `${username}`
                     });
             });
         } else {
             res.status(400).send('Request must be contained title and contents field');
+        }
+    } catch (err) {
+        if (err.message === 'jwt expired') {
+            res.status(401).send('Token expired');
+        } else if (err.message === 'invalid token') {
+            res.status(401).send('Invalid token');
+        } else {
+            res.status(401).send('Request must be contained token');
         }
     }
 });
@@ -176,9 +184,7 @@ app.delete('/:id', async (req, res) => {
         } else if (err.message === 'invalid token') {
             res.status(401).send('Invalid token');
         } else {
-            console.log("invalid token");
-            res.status(401).send('Invalid token');
+            res.status(401).send('Request must be contained token');
         }
     }
-
 });
