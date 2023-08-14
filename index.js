@@ -4,11 +4,12 @@ require('dotenv').config();
 
 const express   = require('express');
 const mysql     = require('mysql2');
-const connection = mysql.createConnection(require('./database'))
+const connection = mysql.createConnection(require('./database'));
 const app       = express();
+const jwt       = require("jsonwebtoken");
 var crypto      = require('crypto');
 const port      = 3000;
-app.set('port', port)
+app.set('port', port);
 // Express JSON Parse
 app.use(express.json());
 
@@ -19,9 +20,8 @@ app.listen(port, () => {
 // Sub 1. CreateUser Endpoint
 var valid_email     = /^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+/;
 var valid_password  = /^[A-Za-z0-9]{8,25}$/;
-app.post('/login', async (req, res) => {
+app.post('/users', async (req, res) => {
     let body = req.body;
-
     if (!body.email || !body.password) {
         res.status(400).send('Request must be contained email and password field');
     } else if ((body.email.length > 30) || !valid_email.test(body.email) || !valid_password.test(body.password)) {
@@ -39,6 +39,29 @@ app.post('/login', async (req, res) => {
                     if (error) throw error;
                     res.status(201).send('Account create complete');
                 })
+            }
+        })
+    }
+})
+
+// Sub 2. GetUser Endpoint
+const secretKey     = require('./jwt_support').secretKey;
+const options       = require('./jwt_support').option;
+app.post('/login', async (req, res) => {
+    let body = req.body;
+    if (!body.email || !body.password) {
+        res.status(400).send('Request must be contained email and password field');
+    } else if ((body.email.length > 30) || !valid_email.test(body.email) || !valid_password.test(body.password)) {
+        res.status(400).send('Invalid email field(xxx@xxxx, max-length=30) or Invalid password field(Upper, Under, Number, Length: 8~25)');
+    } else {
+        connection.query(`SELECT * FROM ${process.env.USER_TABLE} WHERE email='${body.email}'`, (error, rows) => {
+            if (error) throw error;
+            var hashPassword = crypto.createHash("sha256").update(body.password + rows[0].salt).digest("hex");
+            if (hashPassword == rows[0].password) {
+                const token = jwt.sign({user: `${body.email}`}, secretKey, options);
+                res.status(201).send({"token": token})
+            } else {
+                res.status(401).send('Invalid email or password');
             }
         })
     }
