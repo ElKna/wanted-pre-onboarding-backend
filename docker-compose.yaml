@@ -1,0 +1,36 @@
+version: "1.0"
+
+services:
+  backend_server:
+    image: wanted-backend:latest
+    ports:
+      - "3000:3000"
+    networks:
+      - default
+      - db-net
+    container_name: wanted-backend-server
+    environment:
+      HOST_NAME: db_server
+      USER_NAME: ${USER_NAME}
+      PASSWORD: ${PASSWORD}
+      DATABASE: ${DATABASE}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      - db_server
+
+  db_server:
+    image: mysql:latest
+    restart: always
+    ports:
+      - "3306:3306"
+    networks:
+      - db-net
+    container_name: mysql-container
+    volumes: 
+      - ./db_init:/docker-entrypoint-initdb.d/
+    environment:
+      MYSQL_ROOT_PASSWORD: ${PASSWORD}
+
+networks:
+  db-net:
+    driver: bridge

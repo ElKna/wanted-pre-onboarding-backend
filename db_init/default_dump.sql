@@ -1,10 +1,10 @@
 -- 한글 깨짐 방지
 SET NAMES utf8mb4;
 
-DROP DATABASE IF EXISTS `TEST_BOARD`;
+DROP DATABASE IF EXISTS `test_board`;
 
-CREATE DATABASE `TEST_BOARD`;
-USE `TEST_BOARD`;
+CREATE DATABASE `test_board`;
+USE `test_board`;
 
 DROP TABLE IF EXISTS `board`;
 

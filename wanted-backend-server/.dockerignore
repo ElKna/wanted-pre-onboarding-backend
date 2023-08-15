@@ -1,0 +1,7 @@
+node_modules
+db_init
+README.md
+.env
+.gitignore
+docker-compose.yaml
+package-lock.json
