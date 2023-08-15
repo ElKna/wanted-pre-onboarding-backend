@@ -27,7 +27,7 @@ app.post('/users', async (req, res) => {
     } else if ((body.email.length > 30) || !valid_email.test(body.email) || !valid_password.test(body.password)) {
         res.status(400).send('Invalid email field(xxx@xxxx, max-length=30) or Invalid password field(Upper, Under, Number, Length: 8~25)');
     } else {
-        connection.query(`SELECT * FROM ${process.env.USER_TABLE} WHERE email='${body.email}'`, (error, rows) => {
+        connection.query(`SELECT * FROM user WHERE email='${body.email}'`, (error, rows) => {
             if (error) throw error;
             if (rows.length != 0) {
                 res.status(400).send('Already exist email');
@@ -35,7 +35,7 @@ app.post('/users', async (req, res) => {
             } else {
                 var salt            = crypto.randomBytes(16).toString("base64");
                 var hashPassword    = crypto.createHash("sha256").update(body.password + salt).digest("hex");
-                connection.query(`INSERT INTO ${process.env.USER_TABLE} (email, password, salt) VALUES ('${body.email}', '${hashPassword}', '${salt}')`, (error, rows) => {
+                connection.query(`INSERT INTO user (email, password, salt) VALUES ('${body.email}', '${hashPassword}', '${salt}')`, (error, rows) => {
                     if (error) throw error;
                     res.status(201).send('Account create complete');
                 })
@@ -54,7 +54,7 @@ app.post('/login', async (req, res) => {
     } else if ((body.email.length > 30) || !valid_email.test(body.email) || !valid_password.test(body.password)) {
         res.status(400).send('Invalid email field(xxx@xxxx, max-length=30) or Invalid password field(Upper, Under, Number, Length: 8~25)');
     } else {
-        connection.query(`SELECT * FROM ${process.env.USER_TABLE} WHERE email='${body.email}'`, (error, rows) => {
+        connection.query(`SELECT * FROM user WHERE email='${body.email}'`, (error, rows) => {
             if (error) throw error;
             var hashPassword = crypto.createHash("sha256").update(body.password + rows[0].salt).digest("hex");
             if (hashPassword == rows[0].password) {
@@ -74,7 +74,7 @@ app.post('/', async (req, res) => {
         let token = req.rawHeaders[1].split(' ')[1];
         let username = jwt.verify(token, secretKey).user;
         if (body.hasOwnProperty('title') && body.hasOwnProperty('contents')) {
-            connection.query(`INSERT INTO ${process.env.BOARD_TABLE} (title, contents, user) VALUES ('${req.body.title}', '${req.body.contents}', '${username}')`, (error, rows) => {
+            connection.query(`INSERT INTO board (title, contents, user) VALUES ('${req.body.title}', '${req.body.contents}', '${username}')`, (error, rows) => {
                 if (error) throw error;
                 res.status(201).send(
                     {
@@ -100,7 +100,7 @@ app.post('/', async (req, res) => {
 
 // Sub 4. GetAll EndPoint
 app.get('/', async (req, res) => {
-    connection.query(`SELECT * FROM ${process.env.BOARD_TABLE}`, (error, rows) => {
+    connection.query(`SELECT * FROM board`, (error, rows) => {
         if (error) throw error;
         res.send(rows);
     });
@@ -108,7 +108,7 @@ app.get('/', async (req, res) => {
 
 // Sub 5. GetOne EndPoint
 app.get('/:id', async (req, res) => {
-    connection.query(`SELECT * FROM ${process.env.BOARD_TABLE} WHERE board_no='${req.params.id}'`, (error, rows) => {
+    connection.query(`SELECT * FROM board WHERE board_no='${req.params.id}'`, (error, rows) => {
         if (error) throw error;
         if (rows.length == 0) {
             res.status(404).send('No exist content');
@@ -126,12 +126,12 @@ app.post('/:id', async (req, res) => {
         let username = jwt.verify(token, secretKey).user;
         if (!body.hasOwnProperty('title') || !body.hasOwnProperty('contents')) {
             res.status(400).send('Request must be contained title and contents field');
-        } else {            connection.query(`SELECT * FROM ${process.env.BOARD_TABLE} WHERE board_no=${req.params.id}`, (error, rows) => {
+        } else {            connection.query(`SELECT * FROM board WHERE board_no=${req.params.id}`, (error, rows) => {
                 try {
                     if (rows[0].user == username) {
                         connection.query(
-                            `UPDATE ${process.env.BOARD_TABLE} SET title='${req.body.title}' WHERE board_no=${req.params.id};`+
-                            `UPDATE ${process.env.BOARD_TABLE} SET contents='${req.body.contents}' WHERE board_no=${req.params.id};`, (error, rows) => {
+                            `UPDATE board SET title='${req.body.title}' WHERE board_no=${req.params.id};`+
+                            `UPDATE board SET contents='${req.body.contents}' WHERE board_no=${req.params.id};`, (error, rows) => {
                                 if (error) throw error;
                                 if (rows[0].changedRows == 0 && rows[1].changedRows == 0) {
                                     res.status(202).send('Already modified');
@@ -169,10 +169,10 @@ app.delete('/:id', async (req, res) => {
     try {
         let token = req.rawHeaders[1].split(' ')[1];
         let username = jwt.verify(token, secretKey).user;
-        connection.query(`SELECT * FROM ${process.env.BOARD_TABLE} WHERE board_no=${req.params.id}`, (error, rows) => {
+        connection.query(`SELECT * FROM board WHERE board_no=${req.params.id}`, (error, rows) => {
             try {
                 if (rows[0].user == username) {
-                    connection.query(`DELETE FROM ${process.env.BOARD_TABLE} WHERE board_no=${req.params.id}`, (error, rows) => {
+                    connection.query(`DELETE FROM board WHERE board_no=${req.params.id}`, (error, rows) => {
                         if (error) throw error;
                         if (rows.affectedRows == 0) {
                             res.status(202).send('Already deleted');
