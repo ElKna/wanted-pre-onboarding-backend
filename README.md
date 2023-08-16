@@ -25,6 +25,7 @@ npm start # Start index.js server by PM2 Module
 ```
 
 ### 데이터베이스 구조
+![db](https://github.com/ElKna/wanted-pre-onboarding-backend/assets/87401709/03497f89-cb24-476c-a2ac-3a62d7ed0d09)
 
 ### API 명세
 - Sub 1. 사용자 회원가입 엔드포인트
