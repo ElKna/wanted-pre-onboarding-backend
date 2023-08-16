@@ -154,7 +154,8 @@ npm start # Start index.js server by PM2 Module
     // status code 200 OK
     {
         board_id Delete complete
-    }```
+    }
+    ```
 ## Docker compose
 Docker 실행을 위해선 docker가 설치되어 있어야 합니다.  
 해당 Reop를 클론한 후 아래 코드를 실행하면 초기 데이터베이스 및 애플리케이션이 실행됩니다.
@@ -186,3 +187,5 @@ cd ../
 docker compose up
 ```
 API 호출 방법은 위 API 명세와 동일합니다.
+
+### API 작성자 : 윤영태
