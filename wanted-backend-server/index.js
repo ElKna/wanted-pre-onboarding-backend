@@ -138,7 +138,7 @@ app.post('/:id', async (req, res) => {
                                 } else {
                                     res.status(201).send(
                                         {
-                                            "board_id": `${rows.insertId}`,
+                                            "board_id": `${req.params.id}`,
                                             "title": `${body.title}`,
                                             "contents": `${body.contents}`,
                                             "user": `${username}`
