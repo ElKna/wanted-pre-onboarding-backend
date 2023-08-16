@@ -44,6 +44,8 @@ npm start # Start index.js server by PM2 Module
         Account Create Complete
     }
     ```
+![1](https://github.com/ElKna/wanted-pre-onboarding-backend/assets/87401709/6552794a-7dfe-45d6-bcff-156bb56fcbc4)
+
 - Sub 2. 사용자 로그인 엔드포인트
     - Method: POST
     - Endpoint: /login
@@ -59,6 +61,8 @@ npm start # Start index.js server by PM2 Module
     // status code 201 Created
     --JWT TOKEN--
     ```
+![2](https://github.com/ElKna/wanted-pre-onboarding-backend/assets/87401709/713bf372-e786-4bd0-823c-9bd3fa517034)
+
 - Sub 3. 새로운 게시글을 생성하는 엔드포인트
     - Method: POST
     - Endpoint: /
@@ -84,6 +88,8 @@ npm start # Start index.js server by PM2 Module
         "user": "test@mail.com"
     }
     ```
+![3](https://github.com/ElKna/wanted-pre-onboarding-backend/assets/87401709/698f848a-4de5-41a1-af84-774055e9e552)
+
 - Sub 4. 게시글 목록을 조회하는 엔드포인트
     - Method: GET
     - Endpoint: /
@@ -106,6 +112,8 @@ npm start # Start index.js server by PM2 Module
         }
     ]
     ```
+![4](https://github.com/ElKna/wanted-pre-onboarding-backend/assets/87401709/e1cc63d5-002b-4b58-bb71-8e8795665bfe)
+
 - Sub 5. 특정 게시글을 조회하는 엔드포인트
     - Method: GET
     - Endpoint: /{board_id}
@@ -120,6 +128,8 @@ npm start # Start index.js server by PM2 Module
         "user": "test@mail.com"
     }
     ```
+![5](https://github.com/ElKna/wanted-pre-onboarding-backend/assets/87401709/86181b8b-da04-4ddc-9dc8-5dce803461a2)
+
 - Sub 6. 특정 게시글을 수정하는 엔드포인트
     - Method: POST
     - Endpoint: /{board_id}
@@ -145,6 +155,8 @@ npm start # Start index.js server by PM2 Module
         "user": "test@mail.com"
     }
     ```
+![6](https://github.com/ElKna/wanted-pre-onboarding-backend/assets/87401709/433d4c01-be19-4d49-95e4-fe71f570b8f4)
+
 - Sub 7. 특정 게시글을 삭제하는 엔드포인트
     - Method: DELETE
     - Endpoint: /{board_id}
@@ -156,6 +168,8 @@ npm start # Start index.js server by PM2 Module
         board_id Delete complete
     }
     ```
+  ![7](https://github.com/ElKna/wanted-pre-onboarding-backend/assets/87401709/01738ce1-de8e-4071-8327-b9251303d456)
+
 ## Docker compose
 Docker 실행을 위해선 docker가 설치되어 있어야 합니다.  
 해당 Reop를 클론한 후 아래 코드를 실행하면 초기 데이터베이스 및 애플리케이션이 실행됩니다.
